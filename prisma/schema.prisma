@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  posts     Post[]
+  comments  Comment[]
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   // JSON string with mixed content
+  excerpt     String?  // Short preview
+
+  // Legacy field (kept for backward compatibility)
+  categories  String?  // Comma-separated: "SPEND_OFFERS,LIFETIME_FREE"
+
+  // New unified category system
+  categoryType     String   @default("SPEND_OFFERS")
+  categoryRelations CategoryRelation[]
+
+  // Conditional Shared Fields (4-5/5 categories use these)
+  bankId           String?
+  bank             Bank?    @relation(fields: [bankId], references: [id])
+  isVerified       Boolean? @default(false)
+
+  // Expiry Management
+  expiryDateTime       DateTime?
+  showExpiryBadge      Boolean   @default(false)
+  expiryDisplayFormat  String?   @default("date") // 'date' | 'countdown' | 'both'
+
+  // Operational Status (separate from publication status)
+  isActive            Boolean?  @default(true)
+  statusBadgeText     String?
+  statusBadgeColor    String?
+
+  // Details/Overlay Content (5/5 categories)
+  detailsContent  String?  // Full details shown in overlay (supports markdown)
+  detailsImages   String?  // JSON array of image URLs
+
+  // CTA Configuration
+  ctaText     String  @default("View Details")
+  ctaUrl      String?
+  ctaAction   String  @default("overlay") // 'overlay' | 'external' | 'internal'
+
+  // Publication Status
+  published   Boolean  @default(false)
+  status      String   @default("draft") // 'draft' | 'active' | 'archived'
+
+  // Category-Specific Data (JSON blob)
+  categoryData String? // Stores category-specific fields as JSON
+
+  // Existing fields
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryType])
+  @@index([bankId])
+  @@index([status])
+  @@index([expiryDateTime])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  authorName  String   // Display name (from user or guest)
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  label       String     // Display label
+  description String?
+  color       String     @default("bg-gray-100 text-gray-800") // Tailwind classes
+  parentId    String?
+  parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryToCategory")
+  posts       CategoryRelation[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model CategoryRelation {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([postId, categoryId])
+}
+
+model Bank {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  slug       String   @unique
+  logo       String?
+  brandColor String?
+  description String?
+  posts      Post[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model CardConfig {
+  id           String   @id @default(cuid())
+  categoryType String   @unique
+  displayName  String
+  description  String?
+
+  // Form Configuration (JSON)
+  formSchema   String   // Defines fields, types, validation rules
+
+  // Rendering Configuration (JSON)
+  renderConfig String   // Component mapping, layout, styling rules
+
+  // Feature Flags
+  requiresBank         Boolean @default(false)
+  requiresExpiry       Boolean @default(false)
+  supportsVerification Boolean @default(false)
+  supportsActive       Boolean @default(false)
+  supportsAuthor       Boolean @default(false)
+
+  // Display Settings
+  cardLayout  String  @default("standard") // 'standard' | 'premium' | 'compact'
+  sortOrder   Int     @default(0)
+  isEnabled   Boolean @default(true)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryType])
+  @@index([isEnabled])
+}
