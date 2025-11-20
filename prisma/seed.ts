@@ -54,6 +54,136 @@ async function main() {
 
   console.log("✓ Sample post created")
 
+  // Create default CardConfig categories
+  const cardConfigs = [
+    {
+      categoryType: "SPEND_OFFERS",
+      displayName: "Spend Offers",
+      description: "Special spend-based offers and deals",
+      formSchema: JSON.stringify({
+        fields: [
+          { name: "offerDetails", type: "textarea", label: "Offer Details", required: true },
+          { name: "minSpend", type: "number", label: "Minimum Spend", required: false },
+          { name: "maxReward", type: "number", label: "Maximum Reward", required: false }
+        ]
+      }),
+      renderConfig: JSON.stringify({
+        layout: "standard",
+        showBadge: true
+      }),
+      requiresBank: true,
+      requiresExpiry: true,
+      supportsVerification: true,
+      supportsActive: true,
+      cardLayout: "standard",
+      sortOrder: 1,
+      isEnabled: true
+    },
+    {
+      categoryType: "LIFETIME_FREE",
+      displayName: "Lifetime Free Cards",
+      description: "Credit cards with no annual fees",
+      formSchema: JSON.stringify({
+        fields: [
+          { name: "features", type: "textarea", label: "Key Features", required: true },
+          { name: "eligibility", type: "textarea", label: "Eligibility Criteria", required: false }
+        ]
+      }),
+      renderConfig: JSON.stringify({
+        layout: "standard",
+        showBadge: true
+      }),
+      requiresBank: true,
+      requiresExpiry: false,
+      supportsVerification: true,
+      supportsActive: true,
+      cardLayout: "standard",
+      sortOrder: 2,
+      isEnabled: true
+    },
+    {
+      categoryType: "STACKING_HACKS",
+      displayName: "Stacking Hacks",
+      description: "Tips and tricks for maximizing rewards",
+      formSchema: JSON.stringify({
+        fields: [
+          { name: "hackDetails", type: "textarea", label: "Hack Details", required: true },
+          { name: "cardsInvolved", type: "text", label: "Cards Involved", required: false }
+        ]
+      }),
+      renderConfig: JSON.stringify({
+        layout: "standard",
+        showBadge: true
+      }),
+      requiresBank: false,
+      requiresExpiry: false,
+      supportsVerification: true,
+      supportsActive: true,
+      cardLayout: "standard",
+      sortOrder: 3,
+      isEnabled: true
+    },
+    {
+      categoryType: "JOINING_BONUS",
+      displayName: "Joining Bonus",
+      description: "Welcome bonuses and joining offers",
+      formSchema: JSON.stringify({
+        fields: [
+          { name: "bonusAmount", type: "number", label: "Bonus Amount", required: true },
+          { name: "conditions", type: "textarea", label: "Bonus Conditions", required: true }
+        ]
+      }),
+      renderConfig: JSON.stringify({
+        layout: "standard",
+        showBadge: true
+      }),
+      requiresBank: true,
+      requiresExpiry: true,
+      supportsVerification: true,
+      supportsActive: true,
+      cardLayout: "premium",
+      sortOrder: 4,
+      isEnabled: true
+    },
+    {
+      categoryType: "TRANSFER_BONUS",
+      displayName: "Transfer Bonus",
+      description: "Balance transfer offers and bonuses",
+      formSchema: JSON.stringify({
+        fields: [
+          { name: "transferRate", type: "number", label: "Transfer Rate (%)", required: true },
+          { name: "duration", type: "text", label: "Offer Duration", required: true }
+        ]
+      }),
+      renderConfig: JSON.stringify({
+        layout: "standard",
+        showBadge: true
+      }),
+      requiresBank: true,
+      requiresExpiry: true,
+      supportsVerification: true,
+      supportsActive: true,
+      cardLayout: "standard",
+      sortOrder: 5,
+      isEnabled: true
+    }
+  ]
+
+  for (const config of cardConfigs) {
+    await prisma.cardConfig.upsert({
+      where: { categoryType: config.categoryType },
+      update: {},
+      create: config
+    })
+  }
+
+  console.log("✓ Default CardConfig categories created:")
+  console.log("  - Spend Offers")
+  console.log("  - Lifetime Free Cards")
+  console.log("  - Stacking Hacks")
+  console.log("  - Joining Bonus")
+  console.log("  - Transfer Bonus")
+
   console.log("\nSeeding completed successfully!")
 }
 
