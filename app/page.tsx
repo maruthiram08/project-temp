@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import Hero from "@/components/Hero"
 import Features from "@/components/Features"
 import Footer from "@/components/Footer"
-import DynamicCard from "@/components/cards/DynamicCard"
+import { DynamicCard } from "@/components/cards/DynamicCard"
 import Link from "next/link"
 
 async function getHomePageData() {

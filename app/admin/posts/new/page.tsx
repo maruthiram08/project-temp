@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import FormGenerator from '@/components/admin/FormGenerator'
+import { FormGenerator } from '@/components/admin/FormGenerator'
 
 const CATEGORY_TYPES = [
   { value: 'SPEND_OFFERS', label: 'Spend Offers' },

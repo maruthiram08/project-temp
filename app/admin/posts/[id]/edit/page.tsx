@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import FormGenerator from '@/components/admin/FormGenerator'
+import { FormGenerator } from '@/components/admin/FormGenerator'
 
-export default function EditPostPage({ params }: { params: { id: string } }) {
+export default function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const { data: session, status } = useSession()
   const [postData, setPostData] = useState<any>(null)
@@ -21,11 +22,11 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     if (status === 'authenticated' && session?.user?.isAdmin) {
       fetchPost()
     }
-  }, [status, session])
+  }, [status, session, id])
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`/api/admin/posts/${params.id}`)
+      const response = await fetch(`/api/admin/posts/${id}`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch post')
@@ -51,7 +52,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (data: any) => {
     try {
-      const response = await fetch(`/api/admin/posts/${params.id}`, {
+      const response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -83,7 +84,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const response = await fetch(`/api/admin/posts/${params.id}`, {
+      const response = await fetch(`/api/admin/posts/${id}`, {
         method: 'DELETE'
       })
 

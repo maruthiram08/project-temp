@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import DynamicCard from "@/components/cards/DynamicCard"
+import { DynamicCard } from "@/components/cards/DynamicCard"
 import Link from "next/link"
 
 async function getJoiningBonusOffers() {

@@ -15,11 +15,12 @@ const prisma = new PrismaClient()
 // GET - Fetch single bank by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const bank = await prisma.bank.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -46,7 +47,7 @@ export async function GET(
 // PUT - Update bank
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -54,11 +55,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const data = await request.json()
 
     // Check if bank exists
     const existingBank = await prisma.bank.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingBank) {
@@ -83,7 +85,7 @@ export async function PUT(
 
     // Update bank
     const updatedBank = await prisma.bank.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData
     })
 
@@ -109,7 +111,7 @@ export async function PUT(
 // DELETE - Delete bank
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -117,9 +119,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     // Check if bank exists
     const existingBank = await prisma.bank.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -146,7 +149,7 @@ export async function DELETE(
 
     // Delete bank
     await prisma.bank.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({

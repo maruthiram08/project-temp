@@ -13,6 +13,15 @@ import { VerifiedBadge } from './shared/VerifiedBadge'
 export function LifetimeFreeCard({ post, layout = 'standard', onCardClick }: CardComponentProps) {
   const categoryData = post.categoryData as LifetimeFreeCardData
 
+  // Handle missing category data
+  if (!categoryData) {
+    return (
+      <div className="p-6 border border-gray-300 rounded-lg bg-gray-50">
+        <p className="text-gray-600">Invalid post data</p>
+      </div>
+    )
+  }
+
   const handleClick = () => {
     if (onCardClick) {
       onCardClick(post)

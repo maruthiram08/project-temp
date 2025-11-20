@@ -54,6 +54,12 @@ export default async function AdminDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <div className="flex gap-3">
             <Link
+              href="/admin/card-configs"
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Manage Card Types
+            </Link>
+            <Link
               href="/admin/categories"
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             >

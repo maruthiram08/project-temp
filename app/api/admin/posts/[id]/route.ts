@@ -16,7 +16,7 @@ const prisma = new PrismaClient()
 // GET - Fetch single post by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,8 +24,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         bank: {
           select: {
@@ -68,7 +69,7 @@ export async function GET(
 // PUT - Update post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -76,11 +77,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const data = await request.json()
 
     // Check if post exists
     const existingPost = await prisma.post.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingPost) {
@@ -123,7 +125,7 @@ export async function PUT(
 
     // Update post
     const updatedPost = await prisma.post.update({
-      where: { id: params.id },
+      where: { id },
       data: preparedData,
       include: {
         bank: true,
@@ -159,7 +161,7 @@ export async function PUT(
 // DELETE - Delete post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -167,9 +169,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     // Check if post exists
     const existingPost = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, title: true }
     })
 
@@ -179,7 +182,7 @@ export async function DELETE(
 
     // Delete post (cascade will handle related records)
     await prisma.post.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({
