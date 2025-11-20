@@ -72,6 +72,12 @@ export default async function AdminDashboard() {
               Manage Banks
             </Link>
             <Link
+              href="/admin/programs"
+              className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+            >
+              Manage Programs
+            </Link>
+            <Link
               href="/admin/posts/new"
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
@@ -157,13 +163,12 @@ export default async function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              post.status === 'active'
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.status === 'active'
                                 ? "bg-green-100 text-green-800"
                                 : post.status === 'draft'
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
                           >
                             {post.status}
                           </span>

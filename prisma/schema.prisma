@@ -38,6 +38,8 @@ model Post {
   // Conditional Shared Fields (4-5/5 categories use these)
   bankId           String?
   bank             Bank?    @relation(fields: [bankId], references: [id])
+  programId        String?
+  program          Program? @relation("ProgramPosts", fields: [programId], references: [id])
   isVerified       Boolean? @default(false)
 
   // Expiry Management
@@ -75,6 +77,7 @@ model Post {
 
   @@index([categoryType])
   @@index([bankId])
+  @@index([programId])
   @@index([status])
   @@index([expiryDateTime])
 }
@@ -128,6 +131,22 @@ model Bank {
   updatedAt  DateTime @updatedAt
 
   @@index([slug])
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  type        String   // 'airline' | 'hotel' | 'other'
+  logo        String?
+  brandColor  String?
+  description String?
+  posts       Post[]   @relation("ProgramPosts")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([type])
 }
 
 model CardConfig {

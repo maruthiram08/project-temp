@@ -38,12 +38,6 @@ export default function Hero({ stats }: HeroProps) {
               >
                 Get Started Now
               </Link>
-              <Link
-                href="/#deals"
-                className="inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-all border border-gray-300"
-              >
-                Get Live in Feeds
-              </Link>
             </div>
 
             {/* Stats */}
@@ -73,32 +67,15 @@ export default function Hero({ stats }: HeroProps) {
           <div className="relative lg:h-[600px] h-[400px]">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-pink-100 rounded-3xl opacity-50"></div>
             <div className="relative h-full flex items-center justify-center">
-              {/* Placeholder for hero image */}
-              <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="text-6xl mb-4">💳</div>
-                  <p className="text-gray-500 text-sm">Hero Image Placeholder</p>
-                  <p className="text-gray-400 text-xs mt-2">Add your lifestyle photo here</p>
-                </div>
-              </div>
-
-              {/* Floating Card Preview */}
-              <div className="absolute bottom-8 right-8 bg-white rounded-xl shadow-2xl p-4 max-w-xs">
-                <div className="flex items-center gap-3 mb-2">
-                  <Image
-                    src="/assets/Cards/ICICI-Amazon-Pay-Credit-Card.png"
-                    alt="Credit Card"
-                    width={60}
-                    height={38}
-                    className="rounded"
-                  />
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900">Featured Deal</div>
-                    <div className="text-xs text-gray-500">ICICI Amazon Pay</div>
-                  </div>
-                </div>
-                <div className="text-2xl font-bold text-green-600">₹6,228</div>
-                <div className="text-xs text-gray-500">Cashback this month</div>
+              {/* Hero Image */}
+              <div className="w-full h-full rounded-3xl overflow-hidden">
+                <Image
+                  src="/assets/hero-image.jpg"
+                  alt="Happy person using credit card for online shopping"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>
