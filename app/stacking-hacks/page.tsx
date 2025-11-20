@@ -1,67 +1,72 @@
 import { prisma } from "@/lib/prisma"
-import OfferCard from "@/components/OfferCard"
-import Footer from "@/components/Footer"
+import DynamicCard from "@/components/cards/DynamicCard"
+import Link from "next/link"
 
-async function getStackingHacksData() {
+async function getStackingHacks() {
   const posts = await prisma.post.findMany({
     where: {
-      published: true,
-      categories: {
-        contains: "STACKING_HACKS"
-      }
+      categoryType: "STACKING_HACKS",
+      status: "active"
     },
-    select: {
-      id: true,
-      title: true,
-      excerpt: true,
-      slug: true,
-      categories: true,
-      createdAt: true,
+    include: {
+      bank: true
     },
     orderBy: {
-      createdAt: "desc",
-    },
+      createdAt: "desc"
+    }
   })
 
-  return { posts }
+  return posts
 }
 
 export default async function StackingHacksPage() {
-  const data = await getStackingHacksData()
+  const posts = await getStackingHacks()
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-orange-500 text-3xl">🎯</span>
-            <h1 className="text-4xl font-bold text-gray-900">Stacking Hacks</h1>
-          </div>
-          <p className="text-lg text-gray-600">
-            Combine offers to maximize your rewards and get the best value
+      {/* Header */}
+      <div className="bg-gradient-to-r from-orange-600 to-orange-800 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/"
+            className="inline-flex items-center text-orange-100 hover:text-white mb-4 text-sm"
+          >
+            ← Back to Home
+          </Link>
+          <h1 className="text-4xl font-bold mb-4">Stacking Hacks</h1>
+          <p className="text-xl text-orange-100">
+            Maximize your rewards by stacking multiple offers and benefits
           </p>
         </div>
       </div>
 
-      {/* Offers Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {data.posts.length === 0 ? (
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {posts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">
-              No stacking hacks available at the moment. Check back soon!
-            </p>
+            <p className="text-gray-500 text-lg">No stacking hacks available at the moment.</p>
+            <Link
+              href="/"
+              className="mt-4 inline-block text-orange-600 hover:text-orange-800"
+            >
+              Explore other categories
+            </Link>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.posts.map((post) => (
-              <OfferCard key={post.id} post={post} layout="spend" />
-            ))}
-          </div>
+          <>
+            <div className="mb-6">
+              <p className="text-gray-600">
+                Found {posts.length} {posts.length === 1 ? 'hack' : 'hacks'}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <DynamicCard key={post.id} post={post} />
+              ))}
+            </div>
+          </>
         )}
       </div>
-
-      <Footer />
     </main>
   )
 }

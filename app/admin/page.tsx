@@ -4,13 +4,12 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
-const categoryConfig = {
+const categoryConfig: Record<string, { label: string; color: string }> = {
   SPEND_OFFERS: { label: "Spend Offers", color: "bg-blue-100 text-blue-800" },
   LIFETIME_FREE: { label: "Lifetime Free", color: "bg-green-100 text-green-800" },
-  FEATURED_CAMPAIGNS: { label: "Featured Campaigns", color: "bg-purple-100 text-purple-800" },
   STACKING_HACKS: { label: "Stacking Hacks", color: "bg-orange-100 text-orange-800" },
-  REWARD_TRANSFER: { label: "Reward Transfer", color: "bg-pink-100 text-pink-800" },
-  LOYALTY_STATUS: { label: "Loyalty Status", color: "bg-indigo-100 text-indigo-800" },
+  JOINING_BONUS: { label: "Joining Bonus", color: "bg-purple-100 text-purple-800" },
+  TRANSFER_BONUS: { label: "Transfer Bonus", color: "bg-pink-100 text-pink-800" },
 }
 
 async function getAdminPosts(userId: string) {
@@ -19,6 +18,12 @@ async function getAdminPosts(userId: string) {
       authorId: userId,
     },
     include: {
+      bank: {
+        select: {
+          name: true,
+          logo: true
+        }
+      },
       _count: {
         select: {
           comments: true,
@@ -55,6 +60,12 @@ export default async function AdminDashboard() {
               Manage Categories
             </Link>
             <Link
+              href="/admin/banks"
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Manage Banks
+            </Link>
+            <Link
               href="/admin/posts/new"
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
@@ -71,7 +82,10 @@ export default async function AdminDashboard() {
                   Title
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  Bank
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -90,70 +104,96 @@ export default async function AdminDashboard() {
             <tbody className="bg-white divide-y divide-gray-200">
               {posts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     No posts yet. Create your first post!
                   </td>
                 </tr>
               ) : (
-                posts.map((post) => (
-                  <tr key={post.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {post.title}
-                      </div>
-                      <div className="text-sm text-gray-500">{post.slug}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {post.categories.split(",").filter(c => c.trim()).map((cat) => {
-                          const trimmedCat = cat.trim() as keyof typeof categoryConfig
-                          const catInfo = categoryConfig[trimmedCat] || categoryConfig.SPEND_OFFERS
-                          return (
-                            <span
-                              key={cat}
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${catInfo.color}`}
-                            >
-                              {catInfo.label}
+                posts.map((post) => {
+                  const catInfo = categoryConfig[post.categoryType] || {
+                    label: post.categoryType,
+                    color: "bg-gray-100 text-gray-800"
+                  }
+
+                  return (
+                    <tr key={post.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {post.title}
+                            </div>
+                            <div className="text-sm text-gray-500">{post.slug}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {post.bank ? (
+                          <div className="flex items-center">
+                            {post.bank.logo && (
+                              <img
+                                src={post.bank.logo}
+                                alt={post.bank.name}
+                                className="h-6 w-auto mr-2"
+                              />
+                            )}
+                            <span className="text-sm text-gray-900">{post.bank.name}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${catInfo.color}`}>
+                          {catInfo.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              post.status === 'active'
+                                ? "bg-green-100 text-green-800"
+                                : post.status === 'draft'
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {post.status}
+                          </span>
+                          {post.isVerified && (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              ✓ Verified
                             </span>
-                          )
-                        })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          post.published
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {post.published ? "Published" : "Draft"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {post._count.comments}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/admin/posts/${post.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        Edit
-                      </Link>
-                      {post.published && (
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {post._count.comments}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
-                          href={`/posts/${post.slug}`}
-                          className="text-gray-600 hover:text-gray-900"
+                          href={`/admin/posts/${post.id}/edit`}
+                          className="text-blue-600 hover:text-blue-900 mr-4"
                         >
-                          View
+                          Edit
                         </Link>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                        {post.published && (
+                          <Link
+                            href={`/posts/${post.slug}`}
+                            className="text-gray-600 hover:text-gray-900"
+                            target="_blank"
+                          >
+                            View
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
