@@ -26,6 +26,7 @@ export default function OfferCard({ post, layout = "spend" }: OfferCardProps) {
     "SPEND_OFFERS": "Shopping",
     "STACKING_HACKS": "Dining",
     "TRANSFER_BONUS": "Travel",
+    "LIFETIME_FREE": "Lifetime Free",
   }
   const categoryLabel = categoryLabels[categories[0]] || "General"
 

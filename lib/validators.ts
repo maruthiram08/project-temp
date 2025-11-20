@@ -61,6 +61,34 @@ export function validateNumericValues(values: Record<string, any>, fieldNames: s
 }
 
 /**
+ * Validate a single numeric value (wrapper for validation rules)
+ * This is a wrapper around validateNumericValue that returns an array
+ * for use in validation rules
+ */
+export function validateSingleNumericValue(values: Record<string, any>, fieldNames: string[]): FormValidationError[] {
+  const errors: FormValidationError[] = []
+  const fieldName = fieldNames[0] // Get the first field
+  const value = getNestedValue(values, fieldName)
+  const error = validateNumericValue(value, fieldName)
+  if (error) errors.push(error)
+  return errors
+}
+
+/**
+ * Validate a single required field (wrapper for validation rules)
+ * This is a wrapper around validateRequired that returns an array
+ * for use in validation rules
+ */
+export function validateSingleRequired(values: Record<string, any>, fieldNames: string[]): FormValidationError[] {
+  const errors: FormValidationError[] = []
+  const fieldName = fieldNames[0] // Get the first field
+  const value = getNestedValue(values, fieldName)
+  const error = validateRequired(value, fieldName)
+  if (error) errors.push(error)
+  return errors
+}
+
+/**
  * Validate that a value is a valid URL
  */
 export function validateUrl(value: any, fieldName: string): FormValidationError | null {
@@ -286,7 +314,9 @@ function getValidator(validatorName: string): Function | null {
     validateBenefit2Dependencies,
     validateNumericValue,
     validateNumericValues,
+    validateSingleNumericValue,
     validateRequired,
+    validateSingleRequired,
     validateTransferRatio
   }
 

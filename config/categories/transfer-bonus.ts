@@ -265,7 +265,7 @@ export const transferBonusFormSchema: FormSchema = {
       ruleName: 'validBonusValue',
       errorMessage: 'Bonus value must be a valid number',
       fields: ['categoryData.bonusValue'],
-      validator: 'validateNumericValue'
+      validator: 'validateSingleNumericValue'
     }
   ]
 }

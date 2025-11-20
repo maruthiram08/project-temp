@@ -1,27 +1,22 @@
 import { prisma } from "@/lib/prisma"
-import OfferCard from "@/components/OfferCard"
+import { DynamicCard } from "@/components/cards/DynamicCard"
 import Footer from "@/components/Footer"
 import Link from "next/link"
 
 async function getNewCardOffersData(tab?: string) {
   // Determine which category to filter by based on tab
-  const categoryFilter = tab === "ltf" ? "LTF_OFFERS" : "JOINING_BONUS"
+  const categoryFilter = tab === "ltf" ? "LIFETIME_FREE" : "JOINING_BONUS"
 
   const posts = await prisma.post.findMany({
     where: {
-      published: true,
+      status: "active",
       OR: [
-        { categories: { contains: categoryFilter } },
-        { categories: { contains: "NEW_CARD_OFFERS" } },
+        { categoryType: categoryFilter },
+        { categoryType: "NEW_CARD_OFFERS" },
       ]
     },
-    select: {
-      id: true,
-      title: true,
-      excerpt: true,
-      slug: true,
-      categories: true,
-      createdAt: true,
+    include: {
+      bank: true
     },
     orderBy: {
       createdAt: "desc",
@@ -56,21 +51,19 @@ export default async function NewCardOffersPage({
           <div className="flex gap-4">
             <Link
               href="/new-card-offers?tab=joining-bonus"
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === "joining-bonus"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${activeTab === "joining-bonus"
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               Joining Bonus Offers
             </Link>
             <Link
               href="/new-card-offers?tab=ltf"
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === "ltf"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${activeTab === "ltf"
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               LTF Offers
             </Link>
@@ -87,9 +80,9 @@ export default async function NewCardOffersPage({
             </p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.posts.map((post) => (
-              <OfferCard key={post.id} post={post} layout="new-card" />
+              <DynamicCard key={post.id} post={post} />
             ))}
           </div>
         )}

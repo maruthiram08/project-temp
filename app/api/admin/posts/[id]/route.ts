@@ -115,6 +115,14 @@ export async function PUT(
     // Prepare data for database
     const preparedData = preparePostForDatabase(data)
 
+    // Remove fields that cannot be updated directly
+    delete preparedData.id
+    delete preparedData.createdAt
+    delete preparedData.updatedAt
+    delete preparedData.author
+    delete preparedData.bank
+    delete preparedData.categoryRelations
+
     // Update slug if title changed
     if (data.title && data.title !== existingPost.title && !data.slug) {
       preparedData.slug = data.title

@@ -1,34 +1,38 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-export async function GET() {
+const prisma = new PrismaClient()
+
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const categoryType = searchParams.get('categoryType')
+    const status = searchParams.get('status')
+
+    const where: any = {}
+    if (categoryType) where.categoryType = categoryType
+    if (status) where.status = status
+
     const posts = await prisma.post.findMany({
-      where: {
-        published: true,
-      },
+      where,
       include: {
-        author: {
+        bank: {
           select: {
+            id: true,
             name: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-          },
-        },
+            slug: true,
+            logo: true
+          }
+        }
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: 'desc' }
     })
 
     return NextResponse.json(posts)
   } catch (error) {
-    console.error("Error fetching posts:", error)
+    console.error('Error fetching posts:', error)
     return NextResponse.json(
-      { error: "Failed to fetch posts" },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

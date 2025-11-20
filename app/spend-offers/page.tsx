@@ -1,26 +1,49 @@
-import { prisma } from "@/lib/prisma"
+'use client'
+
+import { useState, useEffect } from "react"
 import { DynamicCard } from "@/components/cards/DynamicCard"
+import { PostOverlay } from "@/components/PostOverlay"
+import { EnrichedPost } from "@/types/categories"
 import Link from "next/link"
 
-async function getSpendOffers() {
-  const posts = await prisma.post.findMany({
-    where: {
-      categoryType: "SPEND_OFFERS",
-      status: "active"
-    },
-    include: {
-      bank: true
-    },
-    orderBy: {
-      createdAt: "desc"
+export default function SpendOffersPage() {
+  const [posts, setPosts] = useState<any[]>([])
+  const [selectedPost, setSelectedPost] = useState<EnrichedPost | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const response = await fetch('/api/posts?categoryType=SPEND_OFFERS&status=active')
+        const data = await response.json()
+        setPosts(data)
+      } catch (error) {
+        console.error('Error fetching posts:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  })
+    fetchPosts()
+  }, [])
 
-  return posts
-}
+  const handleCardClick = (post: EnrichedPost) => {
+    setSelectedPost(post)
+  }
 
-export default async function SpendOffersPage() {
-  const posts = await getSpendOffers()
+  const handleCloseOverlay = () => {
+    setSelectedPost(null)
+  }
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading offers...</p>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -61,12 +84,24 @@ export default async function SpendOffersPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
-                <DynamicCard key={post.id} post={post} />
+                <DynamicCard
+                  key={post.id}
+                  post={post}
+                  onCardClick={handleCardClick}
+                />
               ))}
             </div>
           </>
         )}
       </div>
+
+      {/* Post Details Overlay */}
+      {selectedPost && (
+        <PostOverlay
+          post={selectedPost}
+          onClose={handleCloseOverlay}
+        />
+      )}
     </main>
   )
 }

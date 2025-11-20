@@ -8,13 +8,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { PrismaClient } from '@prisma/client'
 import { preparePostForDatabase } from '@/lib/validators'
+import { authOptions } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 // GET - List posts with filters
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session || !(session.user as any)?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -78,12 +79,15 @@ export async function GET(request: NextRequest) {
 // POST - Create new post
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session || !(session.user as any)?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('Session user:', session.user)
+
     const data = await request.json()
+    console.log('Received data:', data)
 
     // Fetch CardConfig for validation
     const cardConfig = await prisma.cardConfig.findUnique({
@@ -100,16 +104,79 @@ export async function POST(request: NextRequest) {
     // TODO: Add validation using validatePost() from lib/validators
     // For now, we'll skip validation to get the basic flow working
 
-    // Prepare data for database (convert objects/arrays to JSON strings)
-    const preparedData = preparePostForDatabase(data)
+    // Extract title from categoryData if not directly provided
+    let title = data.title
+    if (!title) {
+      if (data.categoryData?.offerTitle) {
+        title = data.categoryData.offerTitle
+      } else if (data.categoryData?.cardName) {
+        title = data.categoryData.cardName
+      } else if (data.categoryData?.stackTitle) {
+        title = data.categoryData.stackTitle
+      } else if (data.categoryData?.sourceProgram) {
+        // For Transfer Bonus - use source program as title
+        title = data.categoryData.sourceProgram
+      } else if (data.categoryData?.bonusTitle) {
+        // For Joining Bonus - use bonus title
+        title = data.categoryData.bonusTitle
+      }
+    }
+
+    // Extract excerpt/shortDescription from categoryData if not provided
+    let excerpt = data.excerpt
+    if (!excerpt && data.categoryData?.shortDescription) {
+      excerpt = data.categoryData.shortDescription
+    }
+
+    // Generate content from detailsContent or shortDescription if not provided
+    let content = data.content
+    if (!content) {
+      const contentText = data.detailsContent || excerpt || title || 'No content provided'
+      content = JSON.stringify([
+        { type: 'text', content: contentText }
+      ])
+    }
 
     // Generate slug from title if not provided
-    if (!preparedData.slug) {
-      preparedData.slug = preparedData.title
+    let slug = data.slug
+    if (!slug && title) {
+      const baseSlug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')
+
+      slug = baseSlug
+      let counter = 1
+
+      // Check for uniqueness and append suffix if needed
+      while (true) {
+        const existingPost = await prisma.post.findUnique({
+          where: { slug }
+        })
+
+        if (!existingPost) {
+          break
+        }
+
+        slug = `${baseSlug}-${counter}`
+        counter++
+      }
     }
+
+    // Prepare data for database (convert objects/arrays to JSON strings)
+    const preparedData = preparePostForDatabase({
+      ...data,
+      title,
+      excerpt,
+      content,
+      slug
+    })
+
+    // Log data for debugging
+    console.log('Creating post with data:', {
+      ...preparedData,
+      authorId: (session.user as any).id
+    })
 
     // Create post
     const post = await prisma.post.create({

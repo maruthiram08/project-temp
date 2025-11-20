@@ -209,13 +209,13 @@ export const joiningBonusFormSchema: FormSchema = {
       ruleName: 'validSavingsValue',
       errorMessage: 'Savings value must be a valid number',
       fields: ['categoryData.savingsValue'],
-      validator: 'validateNumericValue'
+      validator: 'validateSingleNumericValue'
     },
     {
       ruleName: 'requiredCardVisual',
       errorMessage: 'Card visual image is required for Joining Bonus',
       fields: ['categoryData.cardVisualImage'],
-      validator: 'validateRequired'
+      validator: 'validateSingleRequired'
     }
   ]
 }
