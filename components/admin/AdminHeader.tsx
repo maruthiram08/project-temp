@@ -94,7 +94,7 @@ export function AdminHeader() {
                             className={`
                                 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                                 ${activeTab === tab.id
-                                    ? 'border-indigo-500 text-indigo-600'
+                                    ? 'border-orange-500 text-orange-600'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }
                             `}
@@ -116,7 +116,7 @@ export function AdminHeader() {
                                 className={`
                                     px-4 py-2 rounded-md text-sm font-medium transition-colors
                                     ${isSubTabActive(subTab.href)
-                                        ? 'bg-indigo-100 text-indigo-700'
+                                        ? 'bg-orange-100 text-orange-700'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                     }
                                 `}

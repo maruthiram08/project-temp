@@ -3,12 +3,27 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSession, signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
 
 export default function Header() {
   const { data: session } = useSession()
+  const pathname = usePathname()
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return pathname === "/"
+    }
+    return pathname?.startsWith(path)
+  }
+
+  const getLinkClass = (path: string) => {
+    return isActive(path)
+      ? "text-sm font-medium text-orange-600"
+      : "text-sm text-gray-600 hover:text-gray-900"
+  }
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -25,19 +40,19 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/" className={getLinkClass("/")}>
               Home
             </Link>
-            <Link href="/spend-offers" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/spend-offers" className={getLinkClass("/spend-offers")}>
               Spend Offers
             </Link>
-            <Link href="/new-card-offers" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/new-card-offers" className={getLinkClass("/new-card-offers")}>
               New Card Offers
             </Link>
-            <Link href="/stacking-hacks" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/stacking-hacks" className={getLinkClass("/stacking-hacks")}>
               Stacking Hacks
             </Link>
-            <Link href="/hotel-airline-deals" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/hotel-airline-deals" className={getLinkClass("/hotel-airline-deals")}>
               Hotel/Airline Deals
             </Link>
           </div>
@@ -52,7 +67,7 @@ export default function Header() {
                 {session.user.isAdmin && (
                   <Link
                     href="/admin"
-                    className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                    className={isActive("/admin") ? "text-sm font-medium text-orange-600" : "text-sm font-medium text-gray-600 hover:text-gray-900"}
                   >
                     Admin
                   </Link>
