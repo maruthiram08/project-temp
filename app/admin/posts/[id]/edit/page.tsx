@@ -12,6 +12,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [postData, setPostData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -42,6 +43,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
       }
 
       setPostData(enrichedPost)
+      setSelectedCategory(enrichedPost.categoryType)
     } catch (err: any) {
       console.error('Error fetching post:', err)
       setError(err.message)
@@ -57,7 +59,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          ...data,
+          categoryType: selectedCategory, // Use selected category
+        })
       })
 
       if (!response.ok) {
@@ -159,24 +164,52 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           </button>
         </div>
 
-        {/* Category Type Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">Category Type:</span>{' '}
-            {postData.categoryType.replace(/_/g, ' ')}
-          </p>
-          <p className="text-xs text-blue-600 mt-1">
-            Note: Category type cannot be changed after creation
+        {/* Category Selector */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Category Type
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              if (confirm('Changing category will reset the form. Continue?')) {
+                setSelectedCategory(e.target.value);
+              }
+            }}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+          >
+            <option value="OTHER" disabled>Select a Category</option>
+            <option value="SPEND_OFFERS">Spend Offer</option>
+            <option value="LIFETIME_FREE">Lifetime Free</option>
+            <option value="STACKING_HACKS">Stacking Hack</option>
+            <option value="JOINING_BONUS">Joining Bonus</option>
+            <option value="TRANSFER_BONUS">Transfer Bonus</option>
+            <option value="NEWS">News</option>
+            <option value="DEVALUATION">Devaluation</option>
+          </select>
+          {selectedCategory === 'OTHER' && (
+            <p className="mt-2 text-sm text-red-600">
+              Please select a valid category to edit this post.
+            </p>
+          )}
+          <p className="text-xs text-gray-500 mt-2">
+            Note: Changing the category will update the post's category type
           </p>
         </div>
 
         {/* Dynamic Form Generator */}
-        <FormGenerator
-          categoryType={postData.categoryType}
-          initialData={postData}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-        />
+        {selectedCategory !== 'OTHER' && (
+          <FormGenerator
+            key={selectedCategory} // Force re-mount when category changes
+            categoryType={selectedCategory}
+            initialData={{
+              ...postData,
+              categoryType: selectedCategory, // Override with selected category
+            }}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+          />
+        )}
       </div>
     </main>
   )

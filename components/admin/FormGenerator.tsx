@@ -103,7 +103,6 @@ export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }:
           errorMap[error.field] = error.message
         })
         setErrors(errorMap)
-        setIsSubmitting(false)
 
         // Scroll to first error
         const firstErrorField = Object.keys(errorMap)[0]
@@ -121,6 +120,8 @@ export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }:
       if (error.errors) {
         setErrors(error.errors)
       }
+    } finally {
+      // Always reset submitting state
       setIsSubmitting(false)
     }
   }
@@ -232,27 +233,6 @@ export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }:
         )
       })}
 
-      {/* Form Actions */}
-      <div className="flex items-center justify-end gap-3 pt-6 border-t">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {isSubmitting && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          )}
-          {isSubmitting ? 'Saving...' : 'Save Post'}
-        </button>
-      </div>
     </form>
   )
 }

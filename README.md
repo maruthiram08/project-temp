@@ -342,3 +342,66 @@ MIT
 ## Support
 
 For questions or issues, refer to the comprehensive guides or open a GitHub issue.
+
+## 🤖 Twitter Automation Module (New)
+
+A complete workflow to import, process, and publish credit card offers from Twitter.
+
+### Features
+- **Tweet Import**: Upload CSV files or manually enter tweet URLs.
+- **AI Processing**: Uses OpenAI GPT-4o to:
+  - Filter irrelevant tweets.
+  - Detect category (Spend Offer, Lifetime Free, etc.).
+  - Extract structured data (Bank, Rewards, Expiry).
+  - Auto-match Bank names.
+- **Review Queue**: Admin interface to review AI extractions before publishing.
+- **Integration**: Approved tweets become draft Posts in the CMS.
+
+### Setup
+1. Add `OPENAI_API_KEY` to your `.env` file.
+2. See `TWITTER_SETUP.md` for configuration details.
+3. See `TWITTER_USER_GUIDE.md` for usage instructions.
+
+### Key Routes
+- `/admin/sources`: Manage source data (Import/List).
+- `/admin/review-queue`: Review and approve processed tweets.
+
+## 📚 Development Documentation
+
+### For Current Development Session
+- **[CHANGELOG.md](./.gemini/antigravity/brain/890ba8c7-0614-448c-8501-15c7ed5c673c/CHANGELOG.md)** - Detailed changelog of recent improvements
+- **[COMMIT_MESSAGE.md](./.gemini/antigravity/brain/890ba8c7-0614-448c-8501-15c7ed5c673c/COMMIT_MESSAGE.md)** - Git commit message template
+
+### Key Technical Documents
+- **Database Schema**: See `prisma/schema.prisma` for complete data model
+  - `Post` - Main content model with flexible categoryData JSON
+  - `PendingPost` - Review queue for AI-processed tweets
+  - `RawTweet` - Imported tweet data
+  - `CardConfig` - Dynamic form configurations for post categories
+  - `Bank` - Credit card issuers
+  - `Program` - Hotels/Airlines programs
+
+- **Admin Components**:
+  - `components/admin/FormGenerator.tsx` - Dynamic form generation based on CardConfig
+  - `components/admin/ReviewPostEditor.tsx` - Review queue editor with workflow
+  - `components/admin/AdminHeader.tsx` - Global tabbed navigation
+  - `components/admin/CardConfigManager.tsx` - Post category management
+
+- **API Routes**:
+  - `/api/admin/posts/*` - CRUD operations for posts
+  - `/api/admin/review-queue/*` - Review queue operations (update, approve, reject)
+  - `/api/admin/sources/*` - Tweet import and processing
+  - `/api/admin/card-configs/*` - Post category configuration
+
+### Recent Improvements (Latest Session)
+1. **Tabbed Navigation**: Reorganized admin panel with Post Management, Data Management, and Source Data tabs
+2. **Review Queue Workflow**: Added save-before-approve workflow with visual guidance
+3. **Bug Fixes**: Fixed infinite loading states and category persistence issues
+4. **Terminology**: Renamed "Card Types" to "Post Categories" for clarity
+
+### Next Development Phase - Key Areas
+- **AI Processing**: OpenAI integration for tweet extraction (`lib/openai.ts`)
+- **Form Validation**: Category-specific validation rules (`lib/validators.ts`)
+- **Dynamic Rendering**: Card rendering based on category type (`components/cards/DynamicCard.tsx`)
+- **Authentication**: Admin access control (`lib/auth.ts`)
+

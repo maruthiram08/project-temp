@@ -123,7 +123,7 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
   }
 
   const handleDelete = async (categoryType: string) => {
-    if (!confirm('Are you sure you want to delete this card type? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this post category? This action cannot be undone.')) {
       return
     }
 
@@ -170,13 +170,13 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
       {/* Header with Add Button */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">
-          Card Types ({cardConfigs.length})
+          Post Categories ({cardConfigs.length})
         </h2>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {showAddForm ? 'Cancel' : '+ Add Card Type'}
+          {showAddForm ? 'Cancel' : '+ Add Category'}
         </button>
       </div>
 
@@ -184,7 +184,7 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
       {showAddForm && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingConfig ? 'Edit Card Type' : 'Add New Card Type'}
+            {editingConfig ? 'Edit Post Category' : 'Add New Post Category'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -330,7 +330,7 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {editingConfig ? 'Update' : 'Create'} Card Type
+                {editingConfig ? 'Update' : 'Create'} Category
               </button>
               <button
                 type="button"
@@ -348,7 +348,7 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
       <div className="space-y-4">
         {cardConfigs.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
-            No card types yet. Click "Add Card Type" to create one.
+            No post categories yet. Click "Add Category" to create one.
           </div>
         ) : (
           cardConfigs.map((config) => (
@@ -406,11 +406,10 @@ export default function CardConfigManager({ initialCardConfigs }: CardConfigMana
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleToggleEnabled(config)}
-                    className={`px-3 py-1 text-sm rounded ${
-                      config.isEnabled
+                    className={`px-3 py-1 text-sm rounded ${config.isEnabled
                         ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                         : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}
+                      }`}
                   >
                     {config.isEnabled ? 'Disable' : 'Enable'}
                   </button>
