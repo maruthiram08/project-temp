@@ -59,21 +59,19 @@ export default async function HotelAirlineDealsPage({
           <div className="flex gap-4">
             <Link
               href="/hotel-airline-deals?tab=transfer-bonus"
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === "transfer-bonus"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${activeTab === "transfer-bonus"
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               Transfer Bonus Deals
             </Link>
             <Link
               href="/hotel-airline-deals?tab=status"
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === "status"
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${activeTab === "status"
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
             >
               Hotel/Airline Status Offers
             </Link>
@@ -92,7 +90,7 @@ export default async function HotelAirlineDealsPage({
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.posts.map((post) => (
-              <OfferCard key={post.id} post={post} layout="spend" />
+              <OfferCard key={post.id} post={{ ...post, categories: post.categories ?? "" }} layout="spend" />
             ))}
           </div>
         )}
