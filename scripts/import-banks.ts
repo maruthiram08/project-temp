@@ -97,7 +97,7 @@ function parseCSV(filePath: string): Promise<BankCSVRow[]> {
             complete: (results) => {
                 resolve(results.data)
             },
-            error: (error) => {
+            error: (error: unknown) => {
                 reject(error)
             }
         })
