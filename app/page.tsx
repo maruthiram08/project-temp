@@ -5,6 +5,10 @@ import Footer from "@/components/Footer"
 import { DynamicCard } from "@/components/cards/DynamicCard"
 import Link from "next/link"
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 async function getHomePageData() {
   // Get stats
   const totalPosts = await prisma.post.count({

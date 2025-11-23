@@ -9,6 +9,7 @@ import { getServerSession } from 'next-auth'
 import { preparePostForDatabase } from '@/lib/validators'
 import { authOptions } from '@/lib/auth'
 import { prisma, withRetry } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 
 // GET - List posts with filters
 export async function GET(request: NextRequest) {
@@ -204,6 +205,15 @@ export async function POST(request: NextRequest) {
         }
       })
     )
+
+    // Revalidate pages to show new post immediately
+    revalidatePath('/')
+    revalidatePath('/spend-offers')
+    revalidatePath('/lifetime-free')
+    revalidatePath('/stacking-hacks')
+    revalidatePath('/joining-bonus')
+    revalidatePath('/transfer-bonus')
+    revalidatePath('/admin')
 
     return NextResponse.json(post, { status: 201 })
   } catch (error: any) {

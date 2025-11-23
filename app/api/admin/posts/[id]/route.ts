@@ -10,6 +10,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { preparePostForDatabase, validatePost } from '@/lib/validators'
 import { prisma, withRetry } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 
 // GET - Fetch single post by ID
 export async function GET(
@@ -159,6 +160,15 @@ export async function PUT(
       })
     )
 
+    // Revalidate pages to show updated post immediately
+    revalidatePath('/')
+    revalidatePath('/spend-offers')
+    revalidatePath('/lifetime-free')
+    revalidatePath('/stacking-hacks')
+    revalidatePath('/joining-bonus')
+    revalidatePath('/transfer-bonus')
+    revalidatePath('/admin')
+
     return NextResponse.json(updatedPost)
   } catch (error: any) {
     console.error('Error updating post:', error)
@@ -208,6 +218,15 @@ export async function DELETE(
         where: { id }
       })
     )
+
+    // Revalidate pages to remove deleted post immediately
+    revalidatePath('/')
+    revalidatePath('/spend-offers')
+    revalidatePath('/lifetime-free')
+    revalidatePath('/stacking-hacks')
+    revalidatePath('/joining-bonus')
+    revalidatePath('/transfer-bonus')
+    revalidatePath('/admin')
 
     return NextResponse.json({
       success: true,
