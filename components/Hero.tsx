@@ -50,12 +50,6 @@ export default function Hero({ stats }: HeroProps) {
               </div>
               <div>
                 <div className="text-3xl font-bold text-orange-600">
-                  {stats.totalCategories}+
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Card Providers</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-orange-600">
                   {stats.activeOffers}+
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Fresh Deals</div>

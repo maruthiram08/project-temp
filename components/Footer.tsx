@@ -17,7 +17,7 @@ export default function Footer() {
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+              className="flex-1 px-4 py-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 border-2 border-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
             />
             <button className="px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors">
               Get Started
