@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma, withRetry } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
@@ -15,9 +15,12 @@ export async function GET(
   try {
     const { categoryType } = await params
 
-    const cardConfig = await prisma.cardConfig.findUnique({
-      where: { categoryType }
-    })
+    // Use retry logic for database connection issues
+    const cardConfig = await withRetry(() =>
+      prisma.cardConfig.findUnique({
+        where: { categoryType }
+      })
+    )
 
     if (!cardConfig) {
       return NextResponse.json(

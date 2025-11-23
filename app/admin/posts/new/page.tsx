@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { FormGenerator } from '@/components/admin/FormGenerator'
@@ -19,6 +19,7 @@ export default function NewPostPage() {
   const [selectedCategory, setSelectedCategory] = useState('SPEND_OFFERS')
 
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const pendingStatusRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   if (status === 'loading') {
@@ -46,11 +47,14 @@ export default function NewPostPage() {
       };
 
       // If a status change was requested via buttons
-      if (pendingStatus) {
-        payload.status = pendingStatus;
+      const statusToUse = pendingStatusRef.current || pendingStatus;
+      if (statusToUse) {
+        payload.status = statusToUse;
+        payload.published = statusToUse === 'active';
       } else {
         // Default to draft if not specified
         payload.status = 'draft';
+        payload.published = false;
       }
 
       const response = await fetch('/api/admin/posts', {
@@ -68,6 +72,9 @@ export default function NewPostPage() {
 
       const post = await response.json()
 
+      // Clear ref
+      pendingStatusRef.current = null;
+
       alert(`Post ${payload.status === 'active' ? 'published' : 'created as draft'} successfully!`);
 
       // Redirect to admin dashboard on success
@@ -83,13 +90,15 @@ export default function NewPostPage() {
 
   const handleCreateDraft = () => {
     setPendingStatus('draft');
-    document.querySelector('form')?.requestSubmit();
+    pendingStatusRef.current = 'draft';
+    (document.getElementById('new-post-form') as HTMLFormElement)?.requestSubmit();
   }
 
   const handlePublish = () => {
     if (confirm('Are you sure you want to publish this post immediately?')) {
       setPendingStatus('active');
-      document.querySelector('form')?.requestSubmit();
+      pendingStatusRef.current = 'active';
+      (document.getElementById('new-post-form') as HTMLFormElement)?.requestSubmit();
     }
   }
 
@@ -137,6 +146,7 @@ export default function NewPostPage() {
               categoryType={selectedCategory}
               onSubmit={handleSubmit}
               onCancel={handleCancel}
+              formId="new-post-form"
             />
           </div>
 

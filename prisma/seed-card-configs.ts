@@ -192,7 +192,6 @@ async function main() {
       requiresExpiry: true,
       supportsVerification: false,
       supportsActive: true,
-      supportsActive: true,
       supportsAuthor: false,
       cardLayout: 'standard',
       sortOrder: 5,

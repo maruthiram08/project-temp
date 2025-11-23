@@ -15,9 +15,10 @@ export interface FormGeneratorProps {
   initialData?: Record<string, any>
   onSubmit: (data: Record<string, any>) => Promise<void>
   onCancel: () => void
+  formId?: string
 }
 
-export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }: FormGeneratorProps) {
+export function FormGenerator({ categoryType, initialData, onSubmit, onCancel, formId }: FormGeneratorProps) {
   const [formSchema, setFormSchema] = useState<FormSchema | null>(null)
   const [formData, setFormData] = useState<Record<string, any>>(initialData || {})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -28,33 +29,63 @@ export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }:
   // Fetch CardConfig and parse formSchema
   useEffect(() => {
     async function fetchCardConfig() {
-      try {
-        const response = await fetch(`/api/admin/card-configs/${categoryType}`)
-        if (!response.ok) throw new Error('Failed to fetch card config')
+      const maxRetries = 3
+      let lastError: Error | undefined
 
-        const cardConfig = await response.json()
-        const schema = JSON.parse(cardConfig.formSchema)
-        setFormSchema(schema)
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          const response = await fetch(`/api/admin/card-configs/${categoryType}`)
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Failed to fetch card config: ${errorText}`)
+          }
 
-        // Expand all sections by default
-        const sectionIds = schema.sections.map((s: FormSection) => s.id)
-        setExpandedSections(new Set(sectionIds))
+          const cardConfig = await response.json()
+          const schema = JSON.parse(cardConfig.formSchema)
+          setFormSchema(schema)
 
-        // Initialize form data with default values
-        if (!initialData) {
-          const defaults: Record<string, any> = { categoryType }
-          schema.fields.forEach((field: FormField) => {
-            if (field.defaultValue !== undefined) {
-              setNestedValue(defaults, field.name, field.defaultValue)
-            }
-          })
-          setFormData(defaults)
+          // Expand all sections by default
+          const sectionIds = schema.sections?.map((s: FormSection) => s.id) || []
+          setExpandedSections(new Set(sectionIds))
+
+          // Initialize form data with default values
+          if (!initialData) {
+            const defaults: Record<string, any> = { categoryType }
+            schema.fields.forEach((field: FormField) => {
+              if (field.defaultValue !== undefined) {
+                setNestedValue(defaults, field.name, field.defaultValue)
+              }
+            })
+            setFormData(defaults)
+          }
+
+          setIsLoading(false)
+          return // Success - exit the retry loop
+        } catch (error: any) {
+          lastError = error
+          console.error(`Error fetching card config (attempt ${attempt + 1}/${maxRetries}):`, error)
+
+          // Check if this is a connection error worth retrying
+          const isConnectionError =
+            error?.message?.includes("Can't reach database") ||
+            error?.message?.includes('Failed to fetch') ||
+            error?.message?.includes('500')
+
+          // Don't retry non-connection errors
+          if (!isConnectionError || attempt === maxRetries - 1) {
+            setIsLoading(false)
+            break
+          }
+
+          // Wait before retrying with exponential backoff
+          const delay = 1000 * Math.pow(2, attempt)
+          console.warn(`Retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
         }
+      }
 
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Error fetching card config:', error)
-        setIsLoading(false)
+      if (lastError) {
+        console.error('Failed to fetch card config after retries:', lastError)
       }
     }
 
@@ -177,10 +208,10 @@ export function FormGenerator({ categoryType, initialData, onSubmit, onCancel }:
   }, {} as Record<string, FormField[]>)
 
   // Sort sections by order
-  const sortedSections = [...formSchema.sections].sort((a, b) => a.order - b.order)
+  const sortedSections = [...(formSchema.sections || [])].sort((a, b) => a.order - b.order)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Form Sections */}
       {sortedSections.map((section) => {
         const sectionFields = (fieldsBySection[section.id] || []).sort((a, b) => (a.order || 0) - (b.order || 0))

@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { preparePostForDatabase } from '@/lib/validators'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma, withRetry } from '@/lib/prisma'
 
 // GET - List posts with filters
 export async function GET(request: NextRequest) {
@@ -85,12 +85,14 @@ export async function POST(request: NextRequest) {
     console.log('Session user:', session.user)
 
     const data = await request.json()
-    console.log('Received data:', data)
+    console.log('[POST /api/admin/posts] Received create data:', JSON.stringify(data, null, 2))
 
-    // Fetch CardConfig for validation
-    const cardConfig = await prisma.cardConfig.findUnique({
-      where: { categoryType: data.categoryType }
-    })
+    // Fetch CardConfig for validation (with retry for Neon wake-up)
+    const cardConfig = await withRetry(() =>
+      prisma.cardConfig.findUnique({
+        where: { categoryType: data.categoryType }
+      })
+    )
 
     if (!cardConfig) {
       return NextResponse.json(
@@ -146,11 +148,13 @@ export async function POST(request: NextRequest) {
       slug = baseSlug
       let counter = 1
 
-      // Check for uniqueness and append suffix if needed
+      // Check for uniqueness and append suffix if needed (with retry)
       while (true) {
-        const existingPost = await prisma.post.findUnique({
-          where: { slug }
-        })
+        const existingPost = await withRetry(() =>
+          prisma.post.findUnique({
+            where: { slug }
+          })
+        )
 
         if (!existingPost) {
           break
@@ -170,29 +174,36 @@ export async function POST(request: NextRequest) {
       slug
     })
 
+    // Sync published status with status field
+    if (data.status) {
+      preparedData.published = data.status === 'active'
+    }
+
     // Log data for debugging
     console.log('Creating post with data:', {
       ...preparedData,
       authorId: (session.user as any).id
     })
 
-    // Create post
-    const post = await prisma.post.create({
-      data: {
-        ...preparedData,
-        authorId: (session.user as any).id
-      },
-      include: {
-        bank: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+    // Create post (with retry for Neon wake-up)
+    const post = await withRetry(() =>
+      prisma.post.create({
+        data: {
+          ...preparedData,
+          authorId: (session.user as any).id
+        },
+        include: {
+          bank: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           }
         }
-      }
-    })
+      })
+    )
 
     return NextResponse.json(post, { status: 201 })
   } catch (error: any) {

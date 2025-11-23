@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { preparePostForDatabase, validatePost } from '@/lib/validators'
-import { prisma } from '@/lib/prisma'
+import { prisma, withRetry } from '@/lib/prisma'
 
 // GET - Fetch single post by ID
 export async function GET(
@@ -23,32 +23,34 @@ export async function GET(
     }
 
     const { id } = await params
-    const post = await prisma.post.findUnique({
-      where: { id },
-      include: {
-        bank: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo: true,
-            brandColor: true
-          }
-        },
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        categoryRelations: {
-          include: {
-            category: true
+    const post = await withRetry(() =>
+      prisma.post.findUnique({
+        where: { id },
+        include: {
+          bank: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              brandColor: true
+            }
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          categoryRelations: {
+            include: {
+              category: true
+            }
           }
         }
-      }
-    })
+      })
+    )
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
@@ -77,20 +79,25 @@ export async function PUT(
 
     const { id } = await params
     const data = await request.json()
+    console.log(`[PUT /api/admin/posts/${id}] Received update data:`, JSON.stringify(data, null, 2))
 
-    // Check if post exists
-    const existingPost = await prisma.post.findUnique({
-      where: { id }
-    })
+    // Check if post exists (with retry for Neon wake-up)
+    const existingPost = await withRetry(() =>
+      prisma.post.findUnique({
+        where: { id }
+      })
+    )
 
     if (!existingPost) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Fetch CardConfig for validation
-    const cardConfig = await prisma.cardConfig.findUnique({
-      where: { categoryType: data.categoryType || existingPost.categoryType }
-    })
+    // Fetch CardConfig for validation (with retry for Neon wake-up)
+    const cardConfig = await withRetry(() =>
+      prisma.cardConfig.findUnique({
+        where: { categoryType: data.categoryType || existingPost.categoryType }
+      })
+    )
 
     if (!cardConfig) {
       return NextResponse.json(
@@ -113,6 +120,11 @@ export async function PUT(
     // Prepare data for database
     const preparedData = preparePostForDatabase(data)
 
+    // Sync published status with status field
+    if (data.status) {
+      preparedData.published = data.status === 'active'
+    }
+
     // Remove fields that cannot be updated directly
     delete preparedData.id
     delete preparedData.createdAt
@@ -129,21 +141,23 @@ export async function PUT(
         .replace(/^-|-$/g, '')
     }
 
-    // Update post
-    const updatedPost = await prisma.post.update({
-      where: { id },
-      data: preparedData,
-      include: {
-        bank: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+    // Update post (with retry for Neon wake-up)
+    const updatedPost = await withRetry(() =>
+      prisma.post.update({
+        where: { id },
+        data: preparedData,
+        include: {
+          bank: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           }
         }
-      }
-    })
+      })
+    )
 
     return NextResponse.json(updatedPost)
   } catch (error: any) {
@@ -176,20 +190,24 @@ export async function DELETE(
     }
 
     const { id } = await params
-    // Check if post exists
-    const existingPost = await prisma.post.findUnique({
-      where: { id },
-      select: { id: true, title: true }
-    })
+    // Check if post exists (with retry for Neon wake-up)
+    const existingPost = await withRetry(() =>
+      prisma.post.findUnique({
+        where: { id },
+        select: { id: true, title: true }
+      })
+    )
 
     if (!existingPost) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Delete post (cascade will handle related records)
-    await prisma.post.delete({
-      where: { id }
-    })
+    // Delete post (cascade will handle related records) (with retry for Neon wake-up)
+    await withRetry(() =>
+      prisma.post.delete({
+        where: { id }
+      })
+    )
 
     return NextResponse.json({
       success: true,

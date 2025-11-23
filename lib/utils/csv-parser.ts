@@ -126,7 +126,7 @@ export async function parseCSV(fileContent: string): Promise<ParseResult> {
                     warnings,
                 });
             },
-            error: (error) => {
+            error: (error: Error) => {
                 errors.push(`CSV parse error: ${error.message}`);
                 resolve({ success: false, tweets: [], errors, warnings });
             },

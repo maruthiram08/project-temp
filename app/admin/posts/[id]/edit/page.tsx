@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { FormGenerator } from '@/components/admin/FormGenerator'
@@ -15,6 +15,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [selectedCategory, setSelectedCategory] = useState<string>('')
 
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const pendingStatusRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`/api/admin/posts/${id}`)
+      const response = await fetch(`/api/admin/posts/${id}`, { cache: 'no-store' })
 
       if (!response.ok) {
         throw new Error('Failed to fetch post')
@@ -64,9 +65,18 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
       };
 
       // If a status change was requested via buttons
-      if (pendingStatus) {
-        payload.status = pendingStatus;
+      const statusToUse = pendingStatusRef.current;
+      console.log('Submitting form. Status from ref:', statusToUse);
+      console.log('Submitting form. Status from state:', pendingStatus);
+
+      if (statusToUse) {
+        payload.status = statusToUse;
+        // Explicitly set published flag to ensure backend receives it
+        payload.published = statusToUse === 'active';
+        console.log('Setting status to:', statusToUse, 'and published to:', statusToUse === 'active');
       }
+
+      console.log('Final payload status:', payload.status, 'published:', payload.published);
 
       const response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
@@ -82,10 +92,11 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
       }
 
       // Update local state if status changed
-      if (pendingStatus) {
-        setPostData((prev: any) => ({ ...prev, status: pendingStatus }));
+      if (statusToUse) {
+        setPostData((prev: any) => ({ ...prev, status: statusToUse, published: statusToUse === 'active' }));
         setPendingStatus(null);
-        alert(`Post ${pendingStatus === 'active' ? 'published' : 'unpublished'} successfully!`);
+        pendingStatusRef.current = null;
+        alert(`Post ${statusToUse === 'active' ? 'published' : 'unpublished'} successfully!`);
       } else {
         alert('Post updated successfully');
       }
@@ -100,22 +111,60 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     }
   }
 
+  const initialFormData = useMemo(() => {
+    if (!postData) return {};
+    return {
+      ...postData,
+      categoryType: selectedCategory,
+    };
+  }, [postData, selectedCategory]);
+
   const handleSave = () => {
     setPendingStatus(null);
-    document.querySelector('form')?.requestSubmit();
+    pendingStatusRef.current = null;
+    pendingStatusRef.current = null;
+    (document.getElementById('post-form') as HTMLFormElement)?.requestSubmit();
   }
 
   const handlePublish = () => {
     if (confirm('Are you sure you want to publish this post? It will be visible to users.')) {
+      const form = document.getElementById('post-form') as HTMLFormElement;
+      if (!form) {
+        console.error('Form not found!');
+        alert('Error: Form not found. Please try refreshing the page.');
+        return;
+      }
+
       setPendingStatus('active');
-      document.querySelector('form')?.requestSubmit();
+      pendingStatusRef.current = 'active';
+      console.log('handlePublish: Set pendingStatusRef to active');
+
+      // Use setTimeout to ensure ref is set before form submits
+      setTimeout(() => {
+        console.log('handlePublish: About to submit form, ref value:', pendingStatusRef.current);
+        form.requestSubmit();
+      }, 10);
     }
   }
 
   const handleUnpublish = () => {
     if (confirm('Are you sure you want to unpublish this post? It will be hidden from users.')) {
+      const form = document.getElementById('post-form') as HTMLFormElement;
+      if (!form) {
+        console.error('Form not found!');
+        alert('Error: Form not found. Please try refreshing the page.');
+        return;
+      }
+
       setPendingStatus('draft');
-      document.querySelector('form')?.requestSubmit();
+      pendingStatusRef.current = 'draft';
+      console.log('handleUnpublish: Set pendingStatusRef to draft');
+
+      // Use setTimeout to ensure ref is set before form submits
+      setTimeout(() => {
+        console.log('handleUnpublish: About to submit form, ref value:', pendingStatusRef.current);
+        form.requestSubmit();
+      }, 10);
     }
   }
 
@@ -194,8 +243,8 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-gray-900">Edit Post</h1>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${postData.status === 'active'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-yellow-100 text-yellow-800'
                 }`}>
                 {postData.status === 'active' ? 'Published' : 'Draft'}
               </span>
@@ -247,12 +296,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
               <FormGenerator
                 key={selectedCategory} // Force re-mount when category changes
                 categoryType={selectedCategory}
-                initialData={{
-                  ...postData,
-                  categoryType: selectedCategory, // Override with selected category
-                }}
+                initialData={initialFormData}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                formId="post-form"
               />
             )}
           </div>
