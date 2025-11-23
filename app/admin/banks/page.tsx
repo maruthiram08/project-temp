@@ -26,6 +26,8 @@ export default function BanksManagementPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingBank, setEditingBank] = useState<Bank | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -61,6 +63,7 @@ export default function BanksManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitting(true)
 
     try {
       const url = editingBank
@@ -86,6 +89,8 @@ export default function BanksManagementPage() {
     } catch (error) {
       console.error('Error saving bank:', error)
       alert('Failed to save bank')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -106,6 +111,7 @@ export default function BanksManagementPage() {
       return
     }
 
+    setDeletingId(bank.id)
     try {
       const response = await fetch(`/api/admin/banks/${bank.id}`, {
         method: 'DELETE'
@@ -121,6 +127,8 @@ export default function BanksManagementPage() {
     } catch (error) {
       console.error('Error deleting bank:', error)
       alert('Failed to delete bank')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -253,14 +261,19 @@ export default function BanksManagementPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {editingBank ? 'Update Bank' : 'Create Bank'}
+                  {submitting && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  {submitting ? 'Saving...' : editingBank ? 'Update Bank' : 'Create Bank'}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -332,15 +345,20 @@ export default function BanksManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleEdit(bank)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        disabled={deletingId === bank.id}
+                        className="text-blue-600 hover:text-blue-900 mr-4 disabled:opacity-50"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(bank)}
-                        className="text-red-600 hover:text-red-900"
+                        disabled={deletingId === bank.id}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 inline-flex items-center gap-1"
                       >
-                        Delete
+                        {deletingId === bank.id && (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                        )}
+                        {deletingId === bank.id ? 'Deleting...' : 'Delete'}
                       </button>
                     </td>
                   </tr>

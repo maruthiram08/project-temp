@@ -27,6 +27,8 @@ export default function ProgramsManagementPage() {
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [editingProgram, setEditingProgram] = useState<Program | null>(null)
+    const [submitting, setSubmitting] = useState(false)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
     const [filterType, setFilterType] = useState<string>('all')
     const [formData, setFormData] = useState({
         name: '',
@@ -74,6 +76,7 @@ export default function ProgramsManagementPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setSubmitting(true)
 
         try {
             const url = editingProgram
@@ -99,6 +102,8 @@ export default function ProgramsManagementPage() {
         } catch (error) {
             console.error('Error saving program:', error)
             alert('Failed to save program')
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -120,6 +125,7 @@ export default function ProgramsManagementPage() {
             return
         }
 
+        setDeletingId(program.id)
         try {
             const response = await fetch(`/api/admin/programs/${program.id}`, {
                 method: 'DELETE'
@@ -135,6 +141,8 @@ export default function ProgramsManagementPage() {
         } catch (error) {
             console.error('Error deleting program:', error)
             alert('Failed to delete program')
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -337,14 +345,19 @@ export default function ProgramsManagementPage() {
                             <div className="flex gap-3">
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    disabled={submitting}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    {editingProgram ? 'Update Program' : 'Create Program'}
+                                    {submitting && (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    )}
+                                    {submitting ? 'Saving...' : editingProgram ? 'Update Program' : 'Create Program'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                    disabled={submitting}
+                                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
@@ -424,15 +437,20 @@ export default function ProgramsManagementPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
                                                 onClick={() => handleEdit(program)}
-                                                className="text-blue-600 hover:text-blue-900 mr-4"
+                                                disabled={deletingId === program.id}
+                                                className="text-blue-600 hover:text-blue-900 mr-4 disabled:opacity-50"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(program)}
-                                                className="text-red-600 hover:text-red-900"
+                                                disabled={deletingId === program.id}
+                                                className="text-red-600 hover:text-red-900 disabled:opacity-50 inline-flex items-center gap-1"
                                             >
-                                                Delete
+                                                {deletingId === program.id && (
+                                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                                                )}
+                                                {deletingId === program.id ? 'Deleting...' : 'Delete'}
                                             </button>
                                         </td>
                                     </tr>
