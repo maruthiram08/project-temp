@@ -19,6 +19,7 @@
     "dotenv": "^17.2.3",
     "next": "16.0.3",
     "next-auth": "^4.24.13",
+    "node-vibrant": "^4.0.3",
     "openai": "^6.9.1",
     "papaparse": "^5.5.3",
     "prisma": "^6.19.0",
