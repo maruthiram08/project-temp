@@ -85,6 +85,25 @@ export async function POST(request: NextRequest) {
 
     console.log('Session user:', session.user)
 
+    // Verify that the user exists in the database
+    const userId = (session.user as any).id
+    const userExists = await withRetry(() =>
+      prisma.user.findUnique({
+        where: { id: userId }
+      })
+    )
+
+    if (!userExists) {
+      console.error('User not found in database. Session user ID:', userId)
+      return NextResponse.json(
+        {
+          error: 'User not found in database. Please ensure the database is seeded with admin user. Run: npm run seed',
+          details: 'The authenticated user does not exist in the database. This usually happens when the production database has not been seeded.'
+        },
+        { status: 400 }
+      )
+    }
+
     const data = await request.json()
     console.log('[POST /api/admin/posts] Received create data:', JSON.stringify(data, null, 2))
 
