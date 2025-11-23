@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
+    "import-banks": "tsx scripts/import-banks.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

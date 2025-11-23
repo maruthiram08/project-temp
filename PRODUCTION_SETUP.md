@@ -1,5 +1,15 @@
 # Production Database Setup Guide
 
+## Issue: Bank Logos Not Visible
+
+If bank logos are not showing up on your posts, this means:
+1. **Banks haven't been imported** - Your production database doesn't have bank data
+2. **Missing image configuration** - Next.js needs permission for external image domains
+
+**Solution:** Follow the steps below to seed your database AND import banks data.
+
+---
+
 ## Issue: Foreign Key Constraint Error When Creating Posts
 
 If you see this error in production:
@@ -45,7 +55,12 @@ DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d '=' -f2-) npx prisma m
 DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d '=' -f2-) npm run seed
 ```
 
-7. **Verify seeding succeeded** - you should see:
+7. **Import banks data** (IMPORTANT - needed for bank logos):
+```bash
+DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d '=' -f2-) npm run import-banks
+```
+
+8. **Verify seeding succeeded** - you should see:
 ```
 ✓ Admin user created:
   Email: admin@creditcards.com
