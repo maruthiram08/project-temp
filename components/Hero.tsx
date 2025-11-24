@@ -12,10 +12,10 @@ interface HeroProps {
 export default function Hero({ stats }: HeroProps) {
   return (
     <section className="relative bg-gradient-to-br from-orange-50 via-white to-pink-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+        <div className="grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="space-y-4">
               <div className="inline-block">
                 <span className="text-sm font-medium text-orange-600 bg-orange-100 px-3 py-1 rounded-full">
@@ -39,26 +39,10 @@ export default function Hero({ stats }: HeroProps) {
                 Get Started Now
               </Link>
             </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8 pt-8 border-t border-gray-200">
-              <div>
-                <div className="text-3xl font-bold text-orange-600">
-                  {stats.totalPosts}+
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Active Cards</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-orange-600">
-                  {stats.activeOffers}+
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Fresh Deals</div>
-              </div>
-            </div>
           </div>
 
           {/* Right Image */}
-          <div className="relative lg:h-[600px] h-[400px]">
+          <div className="relative lg:h-[500px] h-[350px]">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-pink-100 rounded-3xl opacity-50"></div>
             <div className="relative h-full flex items-center justify-center">
               {/* Hero Image */}
