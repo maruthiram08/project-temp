@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { processTweet } from '@/lib/ai/tweet-processor';
 import { matchBank } from '@/lib/utils/bank-matcher';
+import { extractTitleFromTweet } from '@/lib/utils/tweet-title-extractor';
 
 export async function POST(request: NextRequest) {
     try {
@@ -96,12 +97,16 @@ export async function POST(request: NextRequest) {
 
                 } else if (result.isRelevant) {
                     // Relevant but extraction failed or missing data - Create Manual Entry
+                    // Extract a meaningful title from tweet content
+                    const extractedTitle = extractTitleFromTweet(tweet.content);
+
                     const pendingPost = await prisma.pendingPost.create({
                         data: {
                             rawTweetId: tweet.id,
                             category: 'OTHER', // Default to OTHER for manual fix
                             extractedData: JSON.stringify({
-                                title: 'Extraction Failed',
+                                title: extractedTitle,
+                                excerpt: tweet.content.substring(0, 150),
                                 detailsContent: tweet.content,
                                 fieldConfidence: {},
                             }),

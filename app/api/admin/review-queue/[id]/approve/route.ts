@@ -49,8 +49,29 @@ export async function POST(
             ...categoryData
         } = extractedData;
 
+        // Generate title from category-specific fields if not present
+        let postTitle = title;
+        if (!postTitle || postTitle === 'Extraction Failed' || postTitle === 'Untitled') {
+            // Try to extract from category-specific fields
+            if (categoryData.offerTitle) {
+                postTitle = categoryData.offerTitle; // SPEND_OFFERS
+            } else if (categoryData.cardName) {
+                postTitle = categoryData.cardName; // LIFETIME_FREE, JOINING_BONUS
+            } else if (categoryData.stackTitle) {
+                postTitle = categoryData.stackTitle; // STACKING_HACKS
+            } else if (categoryData.sourceProgram && categoryData.destinationProgram) {
+                postTitle = `${categoryData.sourceProgram} to ${categoryData.destinationProgram} Transfer`; // TRANSFER_BONUS
+            } else {
+                // Fallback to first 60 chars of detailsContent or excerpt
+                const fallbackText = detailsContent || excerpt || '';
+                postTitle = fallbackText.length > 60
+                    ? fallbackText.substring(0, 60) + '...'
+                    : fallbackText || 'Untitled Post';
+            }
+        }
+
         // Generate slug
-        const baseSlug = (title || 'untitled')
+        const baseSlug = (postTitle || 'untitled')
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
@@ -71,7 +92,7 @@ export async function POST(
 
         // Create Post
         const postData = {
-            title: title || 'Untitled Post',
+            title: postTitle,
             slug,
             content,
             excerpt: excerpt || '',
