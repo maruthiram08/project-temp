@@ -14,8 +14,8 @@ const categoryConfig: Record<string, { label: string; color: string; href: strin
 }
 
 async function getPost(slug: string) {
-  const post = await prisma.post.findUnique({
-    where: { slug, published: true, status: "active" },
+  const post = await prisma.post.findFirst({
+    where: { slug, status: "active" },
     include: {
       author: {
         select: {

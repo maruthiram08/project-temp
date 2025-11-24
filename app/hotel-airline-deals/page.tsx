@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import OfferCard from "@/components/OfferCard"
+import { DynamicCard } from "@/components/cards/DynamicCard"
 import Footer from "@/components/Footer"
 import Link from "next/link"
 
@@ -87,7 +87,7 @@ export default async function HotelAirlineDealsPage({
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.posts.map((post) => (
-              <OfferCard key={post.id} post={post} layout="spend" />
+              <DynamicCard key={post.id} post={post} />
             ))}
           </div>
         )}
