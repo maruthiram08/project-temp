@@ -22,11 +22,19 @@ export default function ReviewQueueList() {
     const [posts, setPosts] = useState<PendingPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('pending_review');
+    const [counts, setCounts] = useState<Record<string, number>>({
+        pending_review: 0,
+        pending_approval: 0,
+        needs_manual_entry: 0,
+        approved: 0,
+        rejected: 0,
+    });
     const router = useRouter();
     const searchParams = useSearchParams();
 
     useEffect(() => {
         fetchPosts();
+        fetchCounts();
     }, [filterStatus]);
 
     const fetchPosts = async () => {
@@ -41,6 +49,18 @@ export default function ReviewQueueList() {
             console.error('Failed to fetch review queue:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchCounts = async () => {
+        try {
+            const res = await fetch('/api/admin/review-queue?counts=true');
+            const data = await res.json();
+            if (data.success && data.counts) {
+                setCounts(data.counts);
+            }
+        } catch (error) {
+            console.error('Failed to fetch counts:', error);
         }
     };
 
@@ -75,7 +95,7 @@ export default function ReviewQueueList() {
                             : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                             }`}
                     >
-                        {status.label}
+                        {status.label} ({counts[status.id] || 0})
                     </button>
                 ))}
             </div>

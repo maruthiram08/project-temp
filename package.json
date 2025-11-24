@@ -16,11 +16,13 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "@types/nprogress": "^0.2.3",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "next": "16.0.3",
     "next-auth": "^4.24.13",
     "node-vibrant": "^4.0.3",
+    "nprogress": "^0.2.0",
     "openai": "^6.9.1",
     "papaparse": "^5.5.3",
     "prisma": "^6.19.0",

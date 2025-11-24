@@ -11,6 +11,33 @@ export async function GET(request: NextRequest) {
         }
 
         const searchParams = request.nextUrl.searchParams;
+        const countsOnly = searchParams.get('counts') === 'true';
+
+        // If counts requested, return counts for all statuses
+        if (countsOnly) {
+            const statuses = [
+                'pending_review',
+                'pending_approval',
+                'needs_manual_entry',
+                'approved',
+                'rejected',
+            ];
+
+            const counts: Record<string, number> = {};
+
+            for (const status of statuses) {
+                const count = await prisma.pendingPost.count({
+                    where: { status },
+                });
+                counts[status] = count;
+            }
+
+            return NextResponse.json({
+                success: true,
+                counts,
+            });
+        }
+
         const status = searchParams.get('status') || 'pending_review';
         const category = searchParams.get('category');
 

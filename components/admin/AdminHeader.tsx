@@ -68,7 +68,8 @@ export function AdminHeader() {
         if (href === '/admin') {
             return pathname === '/admin';
         }
-        return pathname?.startsWith(href);
+        // Exact match or pathname starts with href followed by /
+        return pathname === href || pathname?.startsWith(href + '/');
     };
 
     return (
