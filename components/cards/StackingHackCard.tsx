@@ -5,6 +5,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { EnrichedPost, StackingHackData } from '@/types/categories'
 import { CardComponentProps } from './CardRegistry'
 import { ValueBadge } from './shared/ValueBadge'
@@ -28,10 +29,11 @@ export function StackingHackCard({ post, layout = 'standard', onCardClick }: Car
   }
 
   return (
-    <div
-      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
-      onClick={handleClick}
-    >
+    <Link href={`/posts/${post.slug}`}>
+      <div
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
+        onClick={handleClick}
+      >
       {/* Banner Image (optional) */}
       {categoryData.bannerImage && (
         <div className="h-32 overflow-hidden">
@@ -108,10 +110,11 @@ export function StackingHackCard({ post, layout = 'standard', onCardClick }: Car
         )}
 
         {/* CTA */}
-        <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all">
+        <span className="block w-full text-center bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all">
           {post.ctaText}
-        </button>
+        </span>
       </div>
     </div>
+    </Link>
   )
 }

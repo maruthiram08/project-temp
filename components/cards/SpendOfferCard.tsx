@@ -5,6 +5,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { EnrichedPost, SpendOfferData } from '@/types/categories'
 import { CardComponentProps } from './CardRegistry'
 import { ValueBadge } from './shared/ValueBadge'
@@ -30,12 +31,13 @@ export function SpendOfferCard({ post, layout = 'standard', onCardClick }: CardC
   }
 
   return (
-    <div
-      className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer ${
-        layout === 'compact' ? 'p-4' : 'p-6'
-      }`}
-      onClick={handleClick}
-    >
+    <Link href={`/posts/${post.slug}`}>
+      <div
+        className={`relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer ${
+          layout === 'compact' ? 'p-4' : 'p-6'
+        }`}
+        onClick={handleClick}
+      >
       {/* Value Back Badge */}
       <ValueBadge
         value={categoryData.valueBackValue}
@@ -76,10 +78,11 @@ export function SpendOfferCard({ post, layout = 'standard', onCardClick }: CardC
           />
         )}
 
-        <button className="ml-auto text-sm font-medium text-blue-600 hover:text-blue-700">
+        <span className="ml-auto text-sm font-medium text-blue-600 hover:text-blue-700">
           {post.ctaText} →
-        </button>
+        </span>
       </div>
     </div>
+    </Link>
   )
 }

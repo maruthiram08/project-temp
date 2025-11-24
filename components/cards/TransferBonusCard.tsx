@@ -5,6 +5,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { EnrichedPost, TransferBonusData } from '@/types/categories'
 import { CardComponentProps } from './CardRegistry'
 import { ValueBadge } from './shared/ValueBadge'
@@ -30,10 +31,11 @@ export function TransferBonusCard({ post, layout = 'standard', onCardClick }: Ca
   }
 
   return (
-    <div
-      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
-      onClick={handleClick}
-    >
+    <Link href={`/posts/${post.slug}`}>
+      <div
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer"
+        onClick={handleClick}
+      >
       {/* Bonus Badge */}
       <ValueBadge
         value={categoryData.bonusValue}
@@ -112,11 +114,12 @@ export function TransferBonusCard({ post, layout = 'standard', onCardClick }: Ca
             />
           )}
 
-          <button className="ml-auto text-sm font-medium text-purple-600 hover:text-purple-700">
+          <span className="ml-auto text-sm font-medium text-purple-600 hover:text-purple-700">
             {post.ctaText} →
-          </button>
+          </span>
         </div>
       </div>
     </div>
+    </Link>
   )
 }

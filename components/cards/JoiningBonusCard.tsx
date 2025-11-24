@@ -5,6 +5,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { EnrichedPost, JoiningBonusData } from '@/types/categories'
 import { CardComponentProps } from './CardRegistry'
 import { ValueBadge } from './shared/ValueBadge'
@@ -30,10 +31,11 @@ export function JoiningBonusCard({ post, layout = 'standard', onCardClick }: Car
   }
 
   return (
-    <div
-      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer hover:scale-[1.02]"
-      onClick={handleClick}
-    >
+    <Link href={`/posts/${post.slug}`}>
+      <div
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer hover:scale-[1.02]"
+        onClick={handleClick}
+      >
       {/* Savings Badge */}
       <ValueBadge
         value={categoryData.savingsValue}
@@ -89,11 +91,12 @@ export function JoiningBonusCard({ post, layout = 'standard', onCardClick }: Car
             />
           )}
 
-          <button className="ml-auto bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+          <span className="ml-auto bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
             {post.ctaText} →
-          </button>
+          </span>
         </div>
       </div>
     </div>
+    </Link>
   )
 }

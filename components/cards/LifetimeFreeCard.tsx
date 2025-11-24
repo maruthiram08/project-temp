@@ -5,6 +5,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { EnrichedPost, LifetimeFreeCardData } from '@/types/categories'
 import { CardComponentProps } from './CardRegistry'
 import { ExpiryBadge } from './shared/ExpiryBadge'
@@ -29,10 +30,11 @@ export function LifetimeFreeCard({ post, layout = 'standard', onCardClick }: Car
   }
 
   return (
-    <div
-      className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer hover:scale-105"
-      onClick={handleClick}
-    >
+    <Link href={`/posts/${post.slug}`}>
+      <div
+        className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer hover:scale-105"
+        onClick={handleClick}
+      >
       {/* Card Visual */}
       <div
         className="h-48 p-6 flex flex-col justify-between"
@@ -105,11 +107,12 @@ export function LifetimeFreeCard({ post, layout = 'standard', onCardClick }: Car
             )}
           </div>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+          <span className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
             {post.ctaText}
-          </button>
+          </span>
         </div>
       </div>
     </div>
+    </Link>
   )
 }
