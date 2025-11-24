@@ -1,8 +1,24 @@
 import OpenAI from 'openai';
 
-// Initialize OpenAI client
-export const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+// Lazy initialization of OpenAI client
+let _openaiClient: OpenAI | null = null;
+
+export function getOpenAIClient(): OpenAI {
+    if (!_openaiClient) {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            throw new Error('OPENAI_API_KEY environment variable is not set. Please configure it to use AI tweet processing features.');
+        }
+        _openaiClient = new OpenAI({ apiKey });
+    }
+    return _openaiClient;
+}
+
+// For backward compatibility
+export const openai = new Proxy({} as OpenAI, {
+    get(_target, prop) {
+        return getOpenAIClient()[prop as keyof OpenAI];
+    }
 });
 
 // Model configurations
