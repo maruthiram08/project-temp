@@ -5,23 +5,20 @@ import Link from "next/link"
 
 async function getHotelAirlineData(tab?: string) {
   // Determine which category to filter by based on tab
-  const categoryFilter = tab === "status" ? "STATUS_OFFERS" : "TRANSFER_BONUS"
+  const categoryType = tab === "status" ? "STATUS_OFFERS" : "TRANSFER_BONUS"
 
   const posts = await prisma.post.findMany({
     where: {
-      published: true,
-      OR: [
-        { categories: { contains: categoryFilter } },
-        { categories: { contains: "HOTEL_AIRLINE_DEALS" } },
-      ]
+      status: "active",
+      categoryType: categoryType
     },
-    select: {
-      id: true,
-      title: true,
-      excerpt: true,
-      slug: true,
-      categories: true,
-      createdAt: true,
+    include: {
+      bank: {
+        select: {
+          name: true,
+          logo: true
+        }
+      }
     },
     orderBy: {
       createdAt: "desc",
@@ -90,7 +87,7 @@ export default async function HotelAirlineDealsPage({
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.posts.map((post) => (
-              <OfferCard key={post.id} post={{ ...post, categories: post.categories ?? "" }} layout="spend" />
+              <OfferCard key={post.id} post={post} layout="spend" />
             ))}
           </div>
         )}
